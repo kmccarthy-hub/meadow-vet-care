@@ -1,0 +1,9 @@
+{
+  "name": "trading-aces-chatbot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trading Aces help centre chatbot powered by a live Google Sheet and Gemini on Vercel.",
+  "scripts": {
+    "start": "vercel dev"
+  }
+}
