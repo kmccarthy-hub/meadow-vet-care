@@ -1,7 +1,7 @@
 const SHEET_ID = "1ONwBn4d9IoWHiklWhbyj_oyQ6TmwM2REOyLI8EYudzc";
 const SHEET_NAME = "Sheet1";
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 function parseCsv(csvText) {
   const rows = [];
@@ -126,19 +126,24 @@ async function askGemini({ message, cards }) {
     `Customer question: ${message}`
   ].join("\n\n");
 
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "x-goog-api-key": apiKey
     },
     body: JSON.stringify({
-      model: GEMINI_MODEL,
-      system_instruction: systemInstruction,
-      input,
-      generation_config: {
-        temperature: 0.2,
-        thinking_level: "low"
+      systemInstruction: {
+        parts: [{ text: systemInstruction }]
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: input }]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.2
       }
     })
   });
@@ -150,11 +155,10 @@ async function askGemini({ message, cards }) {
     throw new Error(messageText);
   }
 
-  const text = data.output_text
-    || data.steps?.flatMap((step) => step.content || [])
-      .filter((content) => content.type === "text")
-      .map((content) => content.text)
-      .join("\n")
+  const text = data.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text || "")
+    .join("")
+    .trim()
     || "I could not produce a response from the live inventory.";
 
   return text;
