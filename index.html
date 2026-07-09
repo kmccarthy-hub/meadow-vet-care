@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Aces Help Centre</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="chat-panel" aria-label="Trading Aces card help centre">
+      <header class="chat-header">
+        <div>
+          <p class="eyebrow">Trading Aces</p>
+          <h1>Card Help Centre</h1>
+        </div>
+        <div class="status-pill" id="connectionStatus">
+          <span aria-hidden="true"></span>
+          Live sheet
+        </div>
+      </header>
+
+      <section class="quick-info" aria-label="Popular searches">
+        <button type="button" class="suggestion">Show me rare soccer cards in stock</button>
+        <button type="button" class="suggestion">What rookie cards are available?</button>
+        <button type="button" class="suggestion">Find basketball cards under $75</button>
+      </section>
+
+      <section class="messages" id="messages" aria-live="polite">
+        <article class="message assistant">
+          <div class="avatar">TA</div>
+          <div class="bubble">
+            Hi, I can help you find Trading Aces sports cards that are currently in stock. Ask about sport, player, price, rarity, quality, rookies, autographs, grading, or stock.
+          </div>
+        </article>
+      </section>
+
+      <form class="composer" id="chatForm">
+        <label class="sr-only" for="userInput">Ask about available cards</label>
+        <input id="userInput" name="message" type="text" autocomplete="off" placeholder="Ask about cards in stock..." required>
+        <button type="submit" id="sendButton">Send</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
