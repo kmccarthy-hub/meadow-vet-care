@@ -1,6 +1,7 @@
 const SHEET_ID = "1ONwBn4d9IoWHiklWhbyj_oyQ6TmwM2REOyLI8EYudzc";
 const SHEET_NAME = "Sheet1";
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+const REMOTE_AI_API_URL = "https://trading-aces-chatbot.vercel.app/api/chat";
 
 const form = document.querySelector("#chatForm");
 const input = document.querySelector("#userInput");
@@ -222,11 +223,9 @@ function buildLocalReply(message, cards) {
 }
 
 async function askServerlessAi(message) {
-  if (window.location.hostname.endsWith("github.io")) {
-    throw new Error("GitHub Pages does not run the private AI endpoint.");
-  }
+  const apiUrl = window.location.hostname.endsWith("github.io") ? REMOTE_AI_API_URL : "/api/chat";
 
-  const response = await fetch("/api/chat", {
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message })
@@ -255,19 +254,11 @@ async function sendMessage(text) {
     const reply = await askServerlessAi(message);
     loadingMessage.classList.remove("loading");
     loadingBubble.textContent = reply;
-    setStatus("AI + live sheet");
-  } catch {
-    try {
-      const cards = cachedCards || await loadCards();
-      const reply = buildLocalReply(message, cards);
-      loadingMessage.classList.remove("loading");
-      loadingBubble.textContent = reply;
-      setStatus("Live sheet");
-    } catch (error) {
-      loadingMessage.classList.remove("loading");
-      loadingBubble.textContent = `${error.message} Please check that the Google Sheet is public and try again.`;
-      setStatus("Needs attention", true);
-    }
+    setStatus("Gemini + live sheet");
+  } catch (error) {
+    loadingMessage.classList.remove("loading");
+    loadingBubble.textContent = `${error.message} Please check the Vercel Gemini deployment and try again.`;
+    setStatus("Gemini needs attention", true);
   } finally {
     setBusy(false);
     input.focus();
@@ -287,5 +278,5 @@ suggestions.forEach((button) => {
 });
 
 loadCards()
-  .then(() => setStatus("Live sheet"))
+  .then(() => setStatus("Gemini + live sheet"))
   .catch(() => setStatus("Needs attention", true));
