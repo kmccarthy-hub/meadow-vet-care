@@ -44,7 +44,7 @@ body {
   height: min(740px, calc(100vh - 96px));
   min-height: 560px;
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto auto 1fr auto;
   overflow: hidden;
   background: var(--panel);
   border: 1px solid rgba(24, 52, 46, 0.10);
@@ -115,9 +115,8 @@ h1 {
 .quick-info {
   display: flex;
   gap: 10px;
-  padding: 14px 18px;
+  padding: 12px 18px 8px;
   overflow-x: auto;
-  border-bottom: 1px solid var(--line);
   background: #fbfcfe;
 }
 
@@ -137,6 +136,40 @@ h1 {
 .suggestion:hover {
   border-color: var(--green);
   background: #f3fbf6;
+}
+
+.capabilities {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 18px 12px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfe;
+}
+
+.capabilities article {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid #d6e5dc;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.capabilities strong,
+.capabilities span {
+  display: block;
+}
+
+.capabilities strong {
+  margin-bottom: 3px;
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.capabilities span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
 }
 
 .messages {
@@ -308,6 +341,21 @@ button[type="submit"]:disabled {
     align-items: flex-start;
     flex-direction: column;
     padding: 20px;
+  }
+
+  .quick-info {
+    padding: 10px 12px 8px;
+  }
+
+  .capabilities {
+    display: flex;
+    gap: 8px;
+    padding: 0 12px 10px;
+    overflow-x: auto;
+  }
+
+  .capabilities article {
+    flex: 0 0 172px;
   }
 
   .message {
