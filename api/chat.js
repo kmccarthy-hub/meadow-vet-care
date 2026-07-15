@@ -168,9 +168,10 @@ function extractLocation(message) {
 async function geocodeLocation(location) {
   const params = new URLSearchParams({
     name: location,
-    count: "1",
+    count: "5",
     language: "en",
-    format: "json"
+    format: "json",
+    countryCode: "IE"
   });
   const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${params.toString()}`, {
     headers: { "User-Agent": "Meadow-Vet-Care-Assistant/1.0" }
@@ -181,7 +182,7 @@ async function geocodeLocation(location) {
   }
 
   const data = await response.json();
-  const result = data.results?.[0];
+  const result = data.results?.find((item) => item.country === "Ireland") || data.results?.[0];
   if (!result) {
     return null;
   }
