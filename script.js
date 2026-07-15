@@ -8,6 +8,7 @@ const input = document.querySelector("#userInput");
 const sendButton = document.querySelector("#sendButton");
 const messages = document.querySelector("#messages");
 const statusPill = document.querySelector("#connectionStatus");
+const quickInfo = document.querySelector("#quickInfo");
 const suggestions = document.querySelectorAll(".suggestion");
 
 function addMessage(role, text, isLoading = false) {
@@ -128,6 +129,7 @@ async function sendMessage(text) {
   const message = text.trim();
   if (!message) return;
 
+  quickInfo?.classList.add("is-hidden");
   addMessage("user", message);
   input.value = "";
   setBusy(true);
