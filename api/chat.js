@@ -1,5 +1,5 @@
-const SHEET_ID = "1ONwBn4d9IoWHiklWhbyj_oyQ6TmwM2REOyLI8EYudzc";
-const SHEET_NAME = "Sheet1";
+const SHEET_ID = "1JhSODtviGHzXru6Eb5MhfXfVIF5vtJk3pclzzv7j2l4";
+const SHEET_NAME = "Untitled";
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
@@ -44,86 +44,74 @@ function parseCsv(csvText) {
   return rows;
 }
 
-function rowsToCards(rows) {
+function rowsToRecords(rows) {
   const [headers, ...dataRows] = rows;
   if (!headers || headers.length === 0) {
     return [];
   }
 
+  const cleanHeaders = headers.map((header) => header.trim());
   return dataRows.map((row) => {
-    const card = {};
-    headers.forEach((header, index) => {
-      card[header.trim()] = (row[index] || "").trim();
+    const record = {};
+    cleanHeaders.forEach((header, index) => {
+      if (header) {
+        record[header] = (row[index] || "").trim();
+      }
     });
-    return card;
+    return record;
   });
 }
 
-async function loadCards() {
+async function loadServices() {
   const response = await fetch(SHEET_CSV_URL, {
-    headers: { "User-Agent": "Trading-Aces-Help-Centre/1.0" }
+    headers: { "User-Agent": "Meadow-Vet-Care-Assistant/1.0" }
   });
 
   if (!response.ok) {
-    throw new Error("Could not read the Google Sheet.");
+    throw new Error("Could not read the Meadow Vet Care Google Sheet.");
   }
 
   const csvText = await response.text();
-  return rowsToCards(parseCsv(csvText));
+  return rowsToRecords(parseCsv(csvText));
 }
 
-function compactCard(card) {
+function compactService(service) {
   return {
-    sku: card.SKU,
-    cardName: card["Card Name"],
-    playerName: card["Player Name"],
-    description: card.Description,
-    sport: card.Sport,
-    league: card.League,
-    teamOrNation: card["Team/Nation"],
-    year: card.Year,
-    set: card["Set/Series"],
-    rarityTier: card["Rarity Tier"],
-    rarityScore: card["Rarity Score"],
-    qualityScore: card["Quality Score"],
-    condition: card.Condition,
-    gradingCompany: card["Grading Company"],
-    grade: card.Grade,
-    serialNumber: card["Serial Number"],
-    autographed: card.Autographed,
-    memorabilia: card.Memorabilia,
-    rookieCard: card["Rookie Card"],
-    variant: card["Parallel/Variant"],
-    priceUsd: card["Price USD"],
-    stockCount: card["Stock Count"],
-    stockStatus: card["Stock Status"],
-    tags: card.Tags
+    service_id: service.service_id,
+    category: service.category,
+    species: service.species,
+    service_name: service.service_name,
+    description: service.description,
+    price_eur: service.price_eur,
+    duration_min: service.duration_min,
+    requires_appointment: service.requires_appointment,
+    availability: service.availability,
+    slots_this_week: service.slots_this_week,
+    special_offer: service.special_offer
   };
 }
 
-async function askGemini({ message, cards }) {
+async function askGemini({ message, services }) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     throw new Error("Missing GEMINI_API_KEY in the deployment environment.");
   }
 
-  const inStockCards = cards
-    .filter((card) => Number(card["Stock Count"] || 0) > 0)
-    .map(compactCard);
-
+  const serviceData = services.map(compactService);
   const systemInstruction = [
-    "You are the Trading Aces card help centre chatbot.",
-    "Only answer questions about Trading Aces sports trading cards that are available in stock.",
-    "Use only the live inventory data provided in the prompt. Do not invent cards, prices, grades, stock counts, or policies.",
-    "If the user asks about anything outside the card inventory, politely say you can only help with Trading Aces cards currently in stock.",
-    "If a card is not in the in-stock inventory, say it is not currently available in stock.",
-    "Keep answers concise, helpful, and customer-friendly.",
-    "Format answers cleanly for a web chat bubble. Avoid nested bullet lists. Prefer short paragraphs or a simple flat bullet list.",
-    "When recommending cards, include card name, sport, price, stock count, and one relevant detail such as rarity, grade, rookie status, autograph, or memorabilia."
+    "You are the Meadow Vet Care AI assistant for a modern Irish veterinary clinic.",
+    "Answer only using the live Meadow Vet Care services data provided in the prompt.",
+    "The clinic serves dogs, cats, rabbits, small mammals, and birds when those services are present in the sheet.",
+    "Use only facts that can be derived from the sheet. Do not invent clinic policies, opening hours, prices, emergency details, discounts, availability, medical advice, public holiday rules, or weather guidance.",
+    "If the user asks about anything outside the sheet, politely say you can only help with Meadow Vet Care service information from the live sheet.",
+    "For medical urgency or animal distress, advise contacting Meadow Vet Care or an emergency vet promptly, but do not diagnose.",
+    "When giving service information, include service name, species, category, price_eur, duration_min, appointment requirement, availability, slots_this_week, and any special_offer when relevant.",
+    "Report price_eur values exactly as listed in the sheet. Do not reinterpret, correct, round, or convert unusual prices.",
+    "Format answers cleanly for a web chat bubble. Avoid nested bullet lists. Prefer short paragraphs or a simple flat bullet list."
   ].join(" ");
 
   const input = [
-    `Live in-stock inventory JSON:\n${JSON.stringify(inStockCards)}`,
+    `Live Meadow Vet Care services JSON:\n${JSON.stringify(serviceData)}`,
     `Customer question: ${message}`
   ].join("\n\n");
 
@@ -156,13 +144,11 @@ async function askGemini({ message, cards }) {
     throw new Error(messageText);
   }
 
-  const text = data.candidates?.[0]?.content?.parts
+  return data.candidates?.[0]?.content?.parts
     ?.map((part) => part.text || "")
     .join("")
     .trim()
-    || "I could not produce a response from the live inventory.";
-
-  return text;
+    || "I could not produce a response from the live Meadow Vet Care services sheet.";
 }
 
 module.exports = async function handler(request, response) {
@@ -183,18 +169,18 @@ module.exports = async function handler(request, response) {
   try {
     const message = String(request.body?.message || "").trim();
     if (!message) {
-      response.status(400).json({ error: "Please enter a question about Trading Aces cards." });
+      response.status(400).json({ error: "Please enter a question about Meadow Vet Care services." });
       return;
     }
 
-    const cards = await loadCards();
-    if (cards.length === 0) {
-      response.status(502).json({ error: "The live card sheet is empty or unavailable." });
+    const services = await loadServices();
+    if (services.length === 0) {
+      response.status(502).json({ error: "The live Meadow Vet Care services sheet is empty or unavailable." });
       return;
     }
 
-    const reply = await askGemini({ message, cards });
-    response.status(200).json({ reply, cardCount: cards.length });
+    const reply = await askGemini({ message, services });
+    response.status(200).json({ reply, serviceCount: services.length });
   } catch (error) {
     response.status(500).json({ error: error.message || "Something went wrong." });
   }
